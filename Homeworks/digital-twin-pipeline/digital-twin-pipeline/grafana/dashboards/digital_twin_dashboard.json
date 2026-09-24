@@ -1,0 +1,84 @@
+{
+  "title": "Digital Twin - Sensor Dashboard",
+  "uid": "digital-twin-sensors",
+  "timezone": "browser",
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Raw Temperature (sensor_data.temperature)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb_twin" },
+      "targets": [
+        {
+          "query": "from(bucket: \"twin_data\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_data\") |> filter(fn: (r) => r._field == \"temperature\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "celsius" }, "overrides": [] }
+    },
+    {
+      "id": 2,
+      "title": "Raw Vibration (sensor_data.vibration)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb_twin" },
+      "targets": [
+        {
+          "query": "from(bucket: \"twin_data\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_data\") |> filter(fn: (r) => r._field == \"vibration\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "id": 3,
+      "title": "Temperature - 10s Moving Average (AGGREGATION)",
+      "type": "timeseries",
+      "description": "aggregateWindow(every: 10s, fn: mean) applied to the raw temperature stream. Demonstrates aggregation/transformation of the time series.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb_twin" },
+      "targets": [
+        {
+          "query": "from(bucket: \"twin_data\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_data\") |> filter(fn: (r) => r._field == \"temperature\") |> aggregateWindow(every: 10s, fn: mean, createEmpty: false) |> yield(name: \"mean\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "celsius" }, "overrides": [] }
+    },
+    {
+      "id": 4,
+      "title": "Vibration - 10s Max (AGGREGATION)",
+      "type": "timeseries",
+      "description": "aggregateWindow(every: 10s, fn: max) applied to the raw vibration stream. Demonstrates a second, different aggregation/transformation type.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb_twin" },
+      "targets": [
+        {
+          "query": "from(bucket: \"twin_data\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_data\") |> filter(fn: (r) => r._field == \"vibration\") |> aggregateWindow(every: 10s, fn: max, createEmpty: false) |> yield(name: \"max\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    },
+    {
+      "id": 5,
+      "title": "Digital Twin Position (twin_state x/y/z)",
+      "type": "timeseries",
+      "description": "Raw digital twin state stream (position), shown separately from the sensor stream to clearly distinguish the two source types.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "influxdb", "uid": "influxdb_twin" },
+      "targets": [
+        {
+          "query": "from(bucket: \"twin_data\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"twin_state\") |> filter(fn: (r) => r._field == \"x\" or r._field == \"y\" or r._field == \"z\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}
